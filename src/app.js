@@ -4,6 +4,7 @@ const morgan = require("morgan");
 const cors = require("cors");
 const helmet = require("helmet");
 const { NODE_ENV } = require("./config");
+const FoldersService = require("./folders/folders-service");
 
 const app = express();
 
@@ -16,6 +17,16 @@ app.use(cors());
 app.get("/", (req, res) => {
   res.send("Hello, world!");
 });
+
+app.get("/", (req, res, next) => {
+  const knexInstance = req.app.get("db");
+  FoldersService.getAllFolders(knexInstance)
+    .then((folders) => {
+      res.json();
+    })
+    .catch(next);
+});
+
 app.use(function errorHandler(error, req, res, next) {
   let response;
   if (NODE_ENV === "production") {
