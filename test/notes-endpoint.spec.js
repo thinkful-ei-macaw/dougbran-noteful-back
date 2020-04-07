@@ -16,11 +16,12 @@ describe.only("notes Endpoints", function () {
   });
 
   after("disconnect from db", () => db.destroy());
-  before("clean the table", () =>
-    db.raw("TRUNCATE noteful_folders, noteful_notes RESTART IDENTITY CASCADE")
-  );
+
+  // before("clean the table", () =>
+  //   db.raw("TRUNCATE noteful_notes, noteful_folders RESTART IDENTITY CASCADE")
+  // );
   afterEach("cleanup", () =>
-    db.raw("TRUNCATE noteful_folders, noteful_notes RESTART IDENTITY CASCADE")
+    db.raw("TRUNCATE noteful_notes, noteful_folders RESTART IDENTITY CASCADE")
   );
 
   describe("GET /notes", () => {
@@ -58,15 +59,19 @@ describe.only("notes Endpoints", function () {
     });
     context("Given there are notes in the database", () => {
       const testnotes = makenotesArray();
-
+      const testFolders = makeFoldersArray();
       beforeEach("insert notes", () => {
-        return db.into("noteful_notes").insert(testnotes);
+        return db.into("noteful_folders").insert(testFolders).then(() => {
+          return db.into("noteful_notes").insert(testnotes);
+        })
       });
 
       it("responds with 200 and the specified note", () => {
         const noteId = 3;
         const expectednote = testnotes[noteId - 1];
-        return supertest(app).get(`/notes/${noteId}`).expect(200, expectednote);
+        return supertest(app)
+          .get(`/notes/${noteId}`)
+          .expect(200, expectednote);
       });
     });
   });
@@ -75,6 +80,7 @@ describe.only("notes Endpoints", function () {
     it("creates an article, responding with 201 and the new article", () => {
       const newnote = {
         name: "test new note",
+        folder_id: 1
       };
       return supertest(app)
         .post("/notes")
@@ -103,8 +109,13 @@ describe.only("notes Endpoints", function () {
 
     context("Given there are notes in database", () => {
       const testnotes = makenotesArray();
-      beforeEach("insert articles", () => {
-        return db.into("noteful_notes").insert(testnotes);
+      beforeEach("insert notes", () => {
+        return db
+          .into("noteful_folders")
+          .insert(testFolders)
+          .then(() => {
+            return db.into("noteful_notes").insert(testNotes);
+          });
       });
       it("responds with 204 and removes the note", () => {
         const removeId = 3;
