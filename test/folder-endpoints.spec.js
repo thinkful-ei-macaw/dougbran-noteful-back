@@ -4,6 +4,7 @@ const app = require("../src/app");
 
 describe("Folders Endpoints", function () {
   let db;
+
   before("make knex instance", () => {
     db = knex({
       client: "pg",
@@ -13,14 +14,13 @@ describe("Folders Endpoints", function () {
   });
 
   after("disconnect from db", () => db.destroy);
+  before("clean the table", () =>
+    db.raw("TRUNCATE noteful_folders, noteful_notes RESTART IDENTITY CASCADE")
+  );
 
-  before("clean the table", () => db("noteful_folders").truncate());
-});
-
-describe(`GET /`, () => {
-  context(`Given no articles`, () => {
+  context(`Given no folders`, () => {
     it(`responds with 200 and an empty list`, () => {
-      return supertest(app).get("/").expect(200, {});
+      return supertest(app).get("/folders").expect(200, []);
     });
   });
 });

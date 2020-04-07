@@ -18,17 +18,18 @@ app.get("/", (req, res) => {
   res.send("Hello, world!");
 });
 
-app.get("/", (req, res, next) => {
+app.get("/folders", (req, res, next) => {
   const knexInstance = req.app.get("db");
   FoldersService.getAllFolders(knexInstance)
     .then((folders) => {
-      res.json();
+      res.json(folders);
     })
     .catch(next);
 });
 
 app.use(function errorHandler(error, req, res, next) {
   let response;
+  console.log(error.message);
   if (NODE_ENV === "production") {
     response = { error: { message: "server error" } };
   } else {
