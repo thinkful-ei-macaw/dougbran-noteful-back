@@ -1,11 +1,11 @@
-const express = require('express')
-const FoldersService = require('./folders-service')
+const express = require("express");
+const FoldersService = require("./folders-service");
 
-const foldersRouter = express.Router()
-const jsonParser = express.json()
+const foldersRouter = express.Router();
+const jsonParser = express.json();
 
 foldersRouter
-  .route('/')
+  .route("/")
   .get((req, res, next) => {
     const knexInstance = req.app.get("db");
     FoldersService.getAllFolders(knexInstance)
@@ -19,50 +19,41 @@ foldersRouter
     const newFolder = { name };
 
     if (newFolder.name == null)
-      return res
-        .status(400)
-        .json({
-          error: { message: "Missing name in request body" },
-        })
+      return res.status(400).json({
+        error: { message: "Missing name in request body" },
+      });
 
     FoldersService.insertFolder(req.app.get("db"), newFolder)
       .then((folder) => {
-        res
-          .status(201)
-          .location(`/folders/${note.id}`)
-          .json(folder);
+        res.status(201).location(`/folders/${folder.id}`).json(folder);
       })
       .catch(next);
-  })
+  });
 
 foldersRouter
-  .route('/:note_id')
+  .route("/:folder_id")
   .all((req, res, next) => {
-    FoldersService.getById(
-      req.app.get('db'),
-      req.params.folder_id
-    )
-      .then(folder => {
+    FoldersService.getById(req.app.get("db"), req.params.folder_id)
+      .then((folder) => {
         if (!folder) {
           return res.status(404).json({
             error: { message: "folder doesn't exist" },
-          })
+          });
         }
-        res.folder = folder
-        next()
+        res.folder = folder;
+        next();
       })
-      .catch(next)
+      .catch(next);
   })
   .get((req, res, next) => {
-    res.json(folder)
+    res.json(res.folder);
   })
   .delete((req, res, next) => {
-    FoldersService
-      .deleteFolder(req.app.get("db"), req.params.folder_id)
-      .then(numRowsAffected => {
-        res.status(204).end()
+    FoldersService.deleteFolder(req.app.get("db"), req.params.folder_id)
+      .then((numRowsAffected) => {
+        res.status(204).end();
       })
-      .catch(next)
-  })
+      .catch(next);
+  });
 
-module.exports = foldersRouter
+module.exports = foldersRouter;
