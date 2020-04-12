@@ -49,7 +49,7 @@ notesRouter
       .catch(next);
   })
   .get((req, res, next) => {
-    res.json(note);
+    res.json(res.note);
   })
   .delete((req, res, next) => {
     notesService
